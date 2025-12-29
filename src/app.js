@@ -14,4 +14,11 @@ app.use(express.urlencoded({extended: true, limit: "16kb"}))  // configuration t
 app.use(express.static("public"))  // configration to tell that I will accept images or files and in which folder
 app.use(cookieParser())  // to make server accessible to secure cookies from browser
 
+//routes import
+import userRouter from "./routes/user.routes.js"
+
+//routes declaration
+app.use("/api/v1/users", userRouter) // if this url hits, we give the control to userRouter.
+// previously we did app.get() and wrote both route and controller inside, but here we are importing both, so we need to use middleware
+
 export {app}
