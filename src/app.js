@@ -10,7 +10,7 @@ app.use(cors({
 }))
 
 app.use(express.json({limit: "16kb"})) // configuration to tell that we accept json
-app.use(express.urlencoded({extended: true, limit: "16kb"}))  // configuration to understand the data encoded in url
+app.use(express.urlencoded({extended: true}))  // configuration to understand the data encoded in url
 app.use(express.static("public"))  // configration to tell that I will accept images or files and in which folder
 app.use(cookieParser())  // to make server accessible to secure cookies from browser
 
