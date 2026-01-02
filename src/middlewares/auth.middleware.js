@@ -1,7 +1,7 @@
 // To verify user exists or not
 // if he has access and refresh token, we will add an object user to request
 import {ApiError} from "../utils/ApiError.js";
-import {asyncHandler} from "utils/ApiError.js";
+import {asyncHandler} from "../utils/asyncHandler.js";
 import jwt from "jsonwebtoken";
 import {User} from "../models/user.model.js";
 
