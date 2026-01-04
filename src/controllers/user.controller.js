@@ -132,8 +132,8 @@ const loginUser = asyncHandler( async (req, res) => {
 
       return res
       .status(200)
-      .cookie("accessToken", accessToken)
-      .cookie("refreshToken", refreshToken)
+      .cookie("accessToken", accessToken, options)
+      .cookie("refreshToken", refreshToken, options)
       .json(
         new ApiResponse(
             200,
@@ -151,8 +151,8 @@ const logoutUser = asyncHandler( async(req, res) => {
       await User.findByIdAndUpdate(
         req.user._id,
         {
-            $set: {
-                refreshToken: undefined
+            $unset: {
+                refreshToken: 1 // 1 acts as flag
             }
         },
         {
@@ -204,7 +204,7 @@ const refreshAccessToken = asyncHandler( async(req, res) => {
 
     return res
     .cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", refreshToken, options)
+    .cookie("refreshToken", newRefreshToken, options)
     .json(
         new ApiResponse(
             200,
@@ -224,7 +224,7 @@ const changeCurrentPassword = asyncHandler(async(req,res) => {
     const {oldPassword, newPassword} = req.body
 
     const user = await User.findById(req.user?._id)
-    const isPasswordCorrect = user.isPasswordCorrect(oldPassword)
+    const isPasswordCorrect = await user.isPasswordCorrect(oldPassword)
     if(!isPasswordCorrect) {
         throw new ApiError(400, "Invalid old password")
     }
@@ -241,7 +241,11 @@ const changeCurrentPassword = asyncHandler(async(req,res) => {
 const getCurrentUser = asyncHandler(async(req, res) => {
     return res
     .status(200)
-    .json(200, req.user, "current user fetched successfully")
+    .json(new ApiResponse(
+        200, 
+        req.user, 
+        "user fetched successfully"
+    ))
 })
 
 // if file update is needed use another controller or endpoint so that text change in database doesn't happen in that case
@@ -292,8 +296,8 @@ const updateUserAvatar = asyncHandler(async(req, res) => {
     ).select("-password")
 
     return res
-    .status(200),
-    json(
+    .status(200)
+    .json(
         new ApiResponse(200, user, "Avatar image updated successfully")
     )
 })
@@ -321,8 +325,8 @@ const updateUserCoverImage = asyncHandler(async(req, res) => {
     ).select("-password")
 
     return res
-    .status(200),
-    json(
+    .status(200)
+    .json(
         new ApiResponse(200, user, "Cover image updated successfully")
     )
 })
