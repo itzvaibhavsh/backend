@@ -332,6 +332,74 @@ const updateUserCoverImage = asyncHandler(async(req, res) => {
 })
 
 
+const getUserChannelProfile = asyncHandler(async(req, res) => {
+      const {username} = req.params
+      if(!username?.trim()) {
+        throw new ApiError(400, "username is missing")
+      }
+
+      const channel = await User.aggregate([
+        {
+            $match: {
+                username: username?.toLowerCase() // gets us a single document by username. works like find, findById etc
+            }
+        },
+        {
+            $lookup: {
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "channel",
+                as: "subscribers"
+            }
+        },
+        {
+            $lookup: {
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "subscriber",
+                as: "subscribedTo"
+            }
+        },
+        {
+            $addFields: {
+                subscribersCount: {
+                    $size: "$subscribers"
+                },
+                channelSubscribedToCount: {
+                    $size: "$subscribedTo"
+                },
+                isSubscribed: {
+                    $cond: {
+                        if: {$in: [req.user?._id, "$subscribers.subscriber"]}, // in can check in arrays too like objects(here)
+                        then: true,
+                        else: false
+                    }
+                }
+            }
+        },
+        {
+            // to give selected values/projections
+            $project: {
+                fullName: 1,
+                username: 1,
+                subscribersCount: 1,
+                channelSubscribedToCount: 1,
+                isSubscribed: 1,
+                avatar: 1,
+                coverImage: 1,
+                email: 1
+            }
+        }
+      ])
+
+      return res
+      .status(200)
+      .json(
+        new ApiResponse(200, channel[0], "User channel fetched successfully")
+      )
+})
+
+
 export {
     registerUser,
     loginUser,
@@ -341,5 +409,6 @@ export {
     getCurrentUser,
     updateAccountDetails,
     updateUserAvatar,
-    updateUserCoverImage
+    updateUserCoverImage,
+    getUserChannelProfile
 }
