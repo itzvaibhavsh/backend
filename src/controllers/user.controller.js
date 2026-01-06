@@ -4,6 +4,7 @@ import {User} from "../models/user.model.js"
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 import jwt from "jsonwebtoken"
+import mongoose from "mongoose"
 
 const generateAccessAndRefreshTokens = async(userId) => {
     try {
@@ -200,7 +201,7 @@ const refreshAccessToken = asyncHandler( async(req, res) => {
         secure: true
     }
 
-    const {accessToken, newRefreshToken} = await generateAccessAndRefreshTokens(user._id)
+    const {accessToken, refreshToken: newRefreshToken} = await generateAccessAndRefreshTokens(user._id)
 
     return res
     .cookie("accessToken", accessToken, options)
@@ -285,7 +286,7 @@ const updateUserAvatar = asyncHandler(async(req, res) => {
         throw new ApiError(400, "Error while uploading on avatar")
     }
 
-    const user = await findByIdAndUpdate(
+    const user = await User.findByIdAndUpdate(
         req.user?._id,
         {
             $set: {
@@ -314,7 +315,7 @@ const updateUserCoverImage = asyncHandler(async(req, res) => {
         throw new ApiError(400, "Error while uploading on coverImage")
     }
 
-    const user = await findByIdAndUpdate(
+    const user = await User.findByIdAndUpdate(
         req.user?._id,
         {
             $set: {
